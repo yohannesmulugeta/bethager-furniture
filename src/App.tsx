@@ -21,11 +21,11 @@ function ShowroomTour() {
   const section = useRef<HTMLElement | null>(null);
   const previewVideo = useRef<HTMLVideoElement | null>(null);
   const hdVideo = useRef<HTMLVideoElement | null>(null);
+  const shownHd = useRef(false);
   const [progress, setProgress] = useState(0);
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
   const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [previewState, setPreviewState] = useState<{ mobile: boolean; ready: boolean; failed: boolean } | null>(null);
-  const [hdSource, setHdSource] = useState<{ mobile: boolean; url: string } | null>(null);
   const [hdFailed, setHdFailed] = useState(false);
   const [showHd, setShowHd] = useState(false);
 
@@ -44,36 +44,14 @@ function ShowroomTour() {
 
   const previewReady = previewState?.mobile === mobile && previewState.ready;
   const previewFailed = previewState?.mobile === mobile && previewState.failed;
-  const hdUrl = hdSource?.mobile === mobile ? hdSource.url : undefined;
   const variant = mobile ? 'mobile' : 'desktop';
+  const hdUrl = previewReady || previewFailed ? `/bethager-furniture/videos/showroom-${variant}-hd.mp4` : undefined;
 
   React.useEffect(() => {
-    if (reduced || (!previewReady && !previewFailed)) return;
-    const controller = new AbortController();
-    let objectUrl: string | null = null;
-    setHdSource(null);
+    shownHd.current = false;
     setShowHd(false);
     setHdFailed(false);
-
-    fetch(`/bethager-furniture/videos/showroom-${variant}-hd.mp4`, { signal: controller.signal })
-      .then(response => {
-        if (!response.ok) throw new Error(`HD video request failed: ${response.status}`);
-        return response.blob();
-      })
-      .then(blob => {
-        if (controller.signal.aborted) return;
-        objectUrl = URL.createObjectURL(blob);
-        setHdSource({ mobile, url: objectUrl });
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setHdFailed(true);
-      });
-
-    return () => {
-      controller.abort();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [mobile, previewReady, previewFailed, reduced, variant]);
+  }, [mobile, reduced]);
 
   React.useEffect(() => {
     if (reduced) return;
@@ -92,12 +70,14 @@ function ShowroomTour() {
       if (Math.abs(video.currentTime - time) > .055) video.currentTime = time;
     };
     const tick = () => {
-      if (!showHd) seek(previewVideo.current);
+      seek(previewVideo.current);
       seek(hdVideo.current);
       const hd = hdVideo.current;
-      if (hdUrl && !showHd && hd && hd.readyState >= 2 && !hd.seeking) {
-        const time = target * Math.max(0, hd.duration - .04);
-        if (Math.abs(hd.currentTime - time) < .12) setShowHd(true);
+      const time = hd && Number.isFinite(hd.duration) ? target * Math.max(0, hd.duration - .04) : 0;
+      const canShowHd = !!hdUrl && !hdFailed && !!hd && hd.readyState >= 2 && !hd.seeking && Math.abs(hd.currentTime - time) < .12;
+      if (canShowHd !== shownHd.current) {
+        shownHd.current = canShowHd;
+        setShowHd(canShowHd);
       }
       frame = requestAnimationFrame(tick);
     };
@@ -110,7 +90,7 @@ function ShowroomTour() {
       window.removeEventListener('resize', update);
       cancelAnimationFrame(frame);
     };
-  }, [hdUrl, reduced, showHd]);
+  }, [hdFailed, hdUrl, reduced]);
 
   const stage = progress < .34 ? 0 : progress < .68 ? 1 : 2;
   const scenes = [
@@ -124,7 +104,7 @@ function ShowroomTour() {
       <div className="absolute inset-0" style={{ background: `url(${photo('photo-1600210492486-724fe5c67fb0', 1600)}) center/cover` }} />
       {!reduced && <>
         <video key={variant} ref={previewVideo} src={`/bethager-furniture/videos/showroom-${variant}.mp4`} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="auto" aria-hidden="true" onLoadedData={() => setPreviewState({ mobile, ready: true, failed: false })} onError={() => setPreviewState({ mobile, ready: false, failed: true })} />
-        <video ref={hdVideo} src={hdUrl} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showHd && hdUrl ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => { if (hdUrl) { setShowHd(false); setHdFailed(true); } }} />
+        <video ref={hdVideo} src={hdUrl} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showHd && hdUrl ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="metadata" aria-hidden="true" onLoadedMetadata={e => { e.currentTarget.currentTime = Math.max(.01, progress * Math.max(0, e.currentTarget.duration - .04)); }} onError={() => { if (hdUrl) { shownHd.current = false; setShowHd(false); setHdFailed(true); } }} />
       </>}
       <div className="absolute inset-0 bg-gradient-to-r from-[#10221c]/80 via-[#10221c]/25 to-transparent" />
       <div className="container relative h-full flex items-center"><div className="max-w-xl">
