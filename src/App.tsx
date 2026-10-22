@@ -1,4 +1,5 @@
-import React,{useState,useMemo,useRef} from 'react';import{Link,useParams,useLocation}from'react-router-dom';import{Menu,X,ArrowUpRight,ArrowRight,Search,MapPin,Heart,ChevronLeft,ChevronRight,Instagram,Copy,Check,ShoppingBag}from'lucide-react';import{motion}from'framer-motion';
+import ShowroomTour from './ShowroomTour';
+import React,{useState,useMemo} from 'react';import{Link,useParams,useLocation}from'react-router-dom';import{Menu,X,ArrowUpRight,ArrowRight,Search,MapPin,Heart,ChevronLeft,ChevronRight,Instagram,Copy,Check,ShoppingBag}from'lucide-react';import{motion}from'framer-motion';
 type Product={id:number;name:string;category:string;price:number;photo:string;material:string;description:string};
 const cats=['Living Room','Bedroom','Dining','Office','Home Decor','Outdoor'];
 const names=[['Luna Modular Sofa','Araya Lounge Chair','Nura Coffee Table','Sena Sectional'],['Aster Platform Bed','Selam Nightstand','Moya Wardrobe','Dalia Dresser'],['Kora Dining Table','Tana Dining Chair','Liya Sideboard','Enat Bar Stool'],['Atlas Executive Desk','Nile Ergonomic Chair','Meskal Bookshelf','Buna Console'],['Hana Floor Lamp','Wabi Wall Mirror','Saba Accent Cabinet','Kaffa Side Table'],['Terra Patio Sofa','Dara Outdoor Table','Geda Garden Chair','Mira Balcony Set']];
@@ -17,116 +18,6 @@ function Header(){const{lang,toggle}=useLang();const[menu,setMenu]=useState(fals
 function Footer(){return <footer className="bg-forest text-white"><div className="container pt-12 pb-9 md:pt-14 md:pb-10"><div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-9 md:gap-10"><div className="col-span-2 md:col-span-5"><Link to="/" className="inline-flex items-center gap-3 mb-4"><img src="/bethager-furniture/bethager-mark.svg" alt="" className="w-10 h-10 brightness-0 invert object-contain" width="40" height="40"/><span className="text-2xl md:text-3xl font-semibold tracking-wide">BETHAGER</span></Link><p className="text-white/65 text-sm leading-6 max-w-xs">Thoughtful furniture for spaces that feel like home. Ethiopian-inspired furniture and home living.</p><p className="text-[11px] text-white/45 mt-3">Concept showroom · Portfolio demonstration</p></div><div className="col-span-1 md:col-span-2"><h3 className="eyebrow text-[#c6ab83] mb-4">Explore</h3><nav aria-label="Footer explore" className="flex flex-col gap-3 text-sm"><Link className="hover:text-[#d7b990]" to="/shop">All furniture</Link><Link className="hover:text-[#d7b990]" to="/collections">Collections</Link><Link className="hover:text-[#d7b990]" to="/custom">Custom furniture</Link></nav></div><div className="col-span-1 md:col-span-2"><h3 className="eyebrow text-[#c6ab83] mb-4">Discover</h3><nav aria-label="Footer discover" className="flex flex-col gap-3 text-sm"><Link className="hover:text-[#d7b990]" to="/about">Our story</Link><Link className="hover:text-[#d7b990]" to="/showroom">Showroom</Link><Link className="hover:text-[#d7b990]" to="/shop">Product inquiries</Link></nav></div><div className="col-span-2 md:col-span-3"><h3 className="eyebrow text-[#c6ab83] mb-4">Get in touch</h3><p className="text-sm text-white/70 leading-6">Explore the collection or prepare a custom furniture inquiry.</p><Link to="/custom" className="inline-flex items-center gap-2 text-sm mt-4 border-b border-[#c6ab83] pb-1 hover:text-[#d7b990]">Create an inquiry <ArrowUpRight size={14}/></Link><p className="text-[11px] text-white/45 mt-4">Business contact details will be added when confirmed.</p></div></div><div className="mt-9 pt-5 border-t border-white/20 flex flex-col sm:flex-row justify-between gap-2 text-[11px] leading-5 text-white/55"><span>© 2026 BETHAGER. Portfolio demonstration only.</span><span>Illustrative products and prices · No orders or payments</span></div></div></footer>}
 function Title({eyebrow,title,sub}:{eyebrow:string;title:string;sub?:string}){return <div className="mb-10"><div className="eyebrow text-walnut mb-4">{eyebrow}</div><h2 className="text-4xl md:text-6xl leading-tight">{title}</h2>{sub&&<p className="dim mt-4 max-w-2xl">{sub}</p>}</div>}
 function ProductCard({p}:{p:Product}){const open=React.useContext(InquiryContext);const wishlist=useWishlist();return <article className="card block"><Link to={'/product/'+p.id} className="block" aria-label={'View '+p.name}><div className="relative aspect-[4/5] bg-[#e3dcd0] overflow-hidden"><ProductImage p={p}/><span className="absolute left-3 top-3 bg-cream/95 px-3 py-2 text-[10px] tracking-wide">SAMPLE PRODUCT</span></div><div className="flex justify-between gap-3 mt-4"><div><p className="text-[10px] uppercase tracking-widest dim">{p.category}</p><h3 className="text-xl mt-1">{p.name}</h3></div><ArrowUpRight size={17}/></div></Link><button onClick={()=>wishlist.toggle(p.id)} aria-label={wishlist.ids.includes(p.id)?"Remove from wishlist":"Save to wishlist"} aria-pressed={wishlist.ids.includes(p.id)} className="mt-3 flex items-center gap-2 text-xs text-walnut"><Heart size={16} fill={wishlist.ids.includes(p.id)?"currentColor":"none"}/>{wishlist.ids.includes(p.id)?"Saved":"Save"}</button><div className="mt-2 text-sm text-walnut">{money(p.price)} <span className="text-[10px] dim">(demo)</span></div><p className="text-xs dim mt-2">{p.material}</p><button onClick={()=>open(p)} className="mt-4 w-full border border-[#9e8b75] py-3 text-[11px] uppercase tracking-[.12em] font-semibold hover:bg-forest hover:text-white transition-colors">Ask about product <ArrowUpRight className="inline ml-2" size={13}/></button></article>}
-function ShowroomTour() {
-  const section = useRef<HTMLElement | null>(null);
-  const previewVideo = useRef<HTMLVideoElement | null>(null);
-  const hdVideo = useRef<HTMLVideoElement | null>(null);
-  const shownHd = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
-  const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [previewState, setPreviewState] = useState<{ mobile: boolean; ready: boolean; failed: boolean } | null>(null);
-  const [hdFailed, setHdFailed] = useState(false);
-  const [showHd, setShowHd] = useState(false);
-
-  React.useEffect(() => {
-    const screen = window.matchMedia('(max-width: 767px)');
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const updateScreen = () => setMobile(screen.matches);
-    const updateMotion = () => setReduced(motion.matches);
-    screen.addEventListener('change', updateScreen);
-    motion.addEventListener('change', updateMotion);
-    return () => {
-      screen.removeEventListener('change', updateScreen);
-      motion.removeEventListener('change', updateMotion);
-    };
-  }, []);
-
-  const previewReady = previewState?.mobile === mobile && previewState.ready;
-  const previewFailed = previewState?.mobile === mobile && previewState.failed;
-  const variant = mobile ? 'mobile' : 'desktop';
-  const hdUrl = previewReady || previewFailed ? `/bethager-furniture/videos/showroom-${variant}-hd.mp4` : undefined;
-
-  React.useEffect(() => {
-    shownHd.current = false;
-    setShowHd(false);
-    setHdFailed(false);
-  }, [mobile, reduced]);
-
-  React.useEffect(() => {
-    if (reduced) return;
-    let frame = 0;
-    let target = 0;
-    const update = () => {
-      const el = section.current;
-      if (!el) return;
-      const total = Math.max(1, el.offsetHeight - window.innerHeight);
-      target = Math.max(0, Math.min(1, -el.getBoundingClientRect().top / total));
-      setProgress(old => Math.abs(old - target) > .012 ? target : old);
-    };
-    const seek = (video: HTMLVideoElement | null) => {
-      if (!video || !Number.isFinite(video.duration) || video.duration <= 0 || video.seeking) return;
-      const time = target * Math.max(0, video.duration - .04);
-      if (Math.abs(video.currentTime - time) > .055) video.currentTime = time;
-    };
-    const tick = () => {
-      seek(previewVideo.current);
-      seek(hdVideo.current);
-      const hd = hdVideo.current;
-      const time = hd && Number.isFinite(hd.duration) ? target * Math.max(0, hd.duration - .04) : 0;
-      const canShowHd = !!hdUrl && !hdFailed && !!hd && hd.readyState >= 2 && !hd.seeking && Math.abs(hd.currentTime - time) < .12;
-      if (canShowHd !== shownHd.current) {
-        shownHd.current = canShowHd;
-        setShowHd(canShowHd);
-      }
-      frame = requestAnimationFrame(tick);
-    };
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-    frame = requestAnimationFrame(tick);
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      cancelAnimationFrame(frame);
-    };
-  }, [hdFailed, hdUrl, reduced]);
-
-  const stage = progress < .34 ? 0 : progress < .68 ? 1 : 2;
-  const scenes = [
-    { eyebrow: '01 / Living Room', heading: 'Designed for living.', description: 'A place to gather, unwind and feel at home.', to: '/shop?category=Living+Room' },
-    { eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
-    { eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' }
-  ];
-
-  return <section ref={section} className={reduced ? 'relative h-[85vh]' : 'relative h-[360vh]'} aria-label="BETHAGER showroom tour">
-    <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#332b23] text-white">
-      <div className="absolute inset-0" style={{ background: `url(${photo('photo-1600210492486-724fe5c67fb0', 1600)}) center/cover` }} />
-      {!reduced && <>
-        <video key={variant} ref={previewVideo} src={`/bethager-furniture/videos/showroom-${variant}.mp4`} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="auto" aria-hidden="true" onLoadedData={() => setPreviewState({ mobile, ready: true, failed: false })} onError={() => setPreviewState({ mobile, ready: false, failed: true })} />
-        <video ref={hdVideo} src={hdUrl} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showHd && hdUrl ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="metadata" aria-hidden="true" onLoadedMetadata={e => { e.currentTarget.currentTime = Math.max(.01, progress * Math.max(0, e.currentTarget.duration - .04)); }} onError={() => { if (hdUrl) { shownHd.current = false; setShowHd(false); setHdFailed(true); } }} />
-      </>}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#10221c]/80 via-[#10221c]/25 to-transparent" />
-      <div className="container relative h-full flex items-center"><div className="max-w-xl">
-        <div className="eyebrow text-[#e5c9a3] mb-5">The BETHAGER showroom experience</div>
-        <div key={stage} className="animate-[fadeIn_.45s_ease-out]">
-          <p className="text-xs tracking-[.22em] uppercase mb-4 text-white/80">{scenes[stage].eyebrow}</p>
-          <h1 className="text-5xl md:text-[84px] leading-[1.06] mb-6">{scenes[stage].heading}</h1>
-          <p className="text-base md:text-lg text-white/85 mb-8">{scenes[stage].description}</p>
-          <Button to={scenes[stage].to}>Explore this collection</Button>
-        </div>
-      </div></div>
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-        <span className="text-[10px] tracking-[.2em] uppercase text-white/85">{reduced ? 'Explore our collections' : 'Scroll to explore'}</span>
-        <div className="w-36 h-[2px] bg-white/40"><div className="h-full bg-[#d8b58b]" style={{ width: (reduced ? 100 : Math.round(progress * 100)) + '%' }} /></div>
-      </div>
-      {!reduced && (previewReady || hdUrl) && <div role="status" className="absolute right-5 top-5 rounded bg-black/45 px-2 py-1 text-[10px] tracking-widest uppercase text-white/85">{showHd && hdUrl ? 'High quality' : hdFailed ? 'Preview video' : 'Loading high quality'}</div>}
-      <div className="absolute right-5 bottom-7 text-[10px] text-white/65 hidden md:block">Concept showroom · Demonstration imagery</div>
-      {previewFailed && hdFailed && <div className="absolute right-5 top-5 text-[10px] text-white/70">Showroom video unavailable</div>}
-    </div>
-  </section>;
-}
-
 function Home(){return <><ShowroomTour/><div className="container py-7 flex flex-wrap gap-5 justify-between items-center border-b border-[#ded8cc] text-[10px] uppercase tracking-[.18em]"><span>Modern craftsmanship</span><span>Considered materials</span><span>Inspired by home</span><span>Designed to last</span></div><section className="container section"><Title eyebrow="Explore our world" title="A room for every story." sub="Explore curated furniture for every corner of the home."/><div className="grid md:grid-cols-3 gap-5">{[['Living Room','photo-1555041469-a586c61ea9bc'],['Bedroom','photo-1505693416388-ac5ce068fe85'],['Dining','photo-1615874694520-474822394e73']].map(([c,p])=><Link key={c} to={'/shop?category='+encodeURIComponent(c)} className="card relative aspect-[3/4] overflow-hidden"><img loading="lazy" className="card-img" src={photo(p,900)} alt={c}/><div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/><div className="absolute bottom-7 left-7 text-white flex items-center gap-4"><h3 className="text-3xl"><T>{c}</T></h3><ArrowUpRight/></div></Link>)}</div></section><section className="container section pt-0"><div className="flex justify-between items-end gap-6"><Title eyebrow="Handpicked details" title="The curated edit."/><Link to="/shop" className="navlink pb-10">View all <ArrowRight className="inline ml-2" size={15}/></Link></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-5">{products.slice(0,4).map(p=><ProductCard p={p} key={p.id}/>)}</div></section><section className="grid md:grid-cols-2 bg-[#e6ddd0]"><img className="w-full h-[420px] md:h-[600px] object-cover" loading="lazy" src={photo('photo-1600607687920-4e2a09cf159d',1100)} alt="Warm contemporary room"/><div className="flex items-center px-[9%] py-20"><div><div className="eyebrow text-walnut mb-5">The BETHAGER perspective</div><h2 className="text-5xl md:text-6xl leading-tight mb-6">More than furniture. <i>A feeling.</i></h2><p className="dim max-w-md mb-8">Every piece should bring warmth, purpose and beauty into everyday rituals. Our concept is rooted in the welcoming spirit of Ethiopian homes.</p><Button to="/about">Discover our story</Button></div></div></section><section className="container section text-center"><div className="eyebrow text-walnut mb-4">An invitation to explore</div><h2 className="text-5xl md:text-7xl mb-7">Your next favorite space<br/><i>starts here.</i></h2><Button to="/collections">View collections</Button></section></>}
 function Shop(){const url=new URLSearchParams(useLocation().search);const[category,setCategory]=useState(url.get('category')||'All');const[q,setQ]=useState('');const[sort,setSort]=useState('featured');const[onlySaved,setOnlySaved]=useState(false);const wishlist=useWishlist();const visible=useMemo(()=>{let a=products.filter(p=>(category==='All'||p.category===category)&&p.name.toLowerCase().includes(q.toLowerCase())&&(!onlySaved||wishlist.ids.includes(p.id)));if(sort==='low')a.sort((a,b)=>a.price-b.price);if(sort==='high')a.sort((a,b)=>b.price-a.price);return a},[category,q,sort,onlySaved,wishlist.ids]);return <main className="container section"><Title eyebrow="The furniture edit" title="Explore the collection." sub="24 illustrative products. All prices, descriptions and availability are sample data for this portfolio demo."/><div className="flex flex-wrap items-center gap-3 mb-9"><div className="flex items-center border border-[#cbbfb0] px-3 flex-1 min-w-48"><Search size={18}/><input aria-label="Search furniture" className="bg-transparent p-3 w-full outline-none" placeholder="Search furniture..." value={q} onChange={e=>setQ(e.target.value)}/></div><select aria-label="Product category" className="p-3 border border-[#cbbfb0] bg-transparent" value={category} onChange={e=>setCategory(e.target.value)}>{['All',...cats].map(c=><option key={c}>{c}</option>)}</select><select aria-label="Sort products" className="p-3 border border-[#cbbfb0] bg-transparent" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></div><label className="flex items-center gap-2 mb-5 text-sm"><input type="checkbox" checked={onlySaved} onChange={e=>setOnlySaved(e.target.checked)}/> Show saved items ({wishlist.ids.length})</label><p className="text-xs dim mb-5">{visible.length} products</p><div className="grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-12">{visible.map(p=><ProductCard p={p} key={p.id}/>)}</div>{!visible.length&&<div className="py-20 text-center">No products match your search.</div>}</main>}
 function CustomRequest(){const [type,setType]=useState('Wardrobe');const [width,setWidth]=useState('180');const [height,setHeight]=useState('220');const [depth,setDepth]=useState('60');const [material,setMaterial]=useState('Natural wood');const [notes,setNotes]=useState('');const [copied,setCopied]=useState(false);const msg='BETHAGER custom furniture inquiry (demo)\\nFurniture: '+type+'\\nDimensions: '+width+' × '+height+' × '+depth+' cm (W × H × D)\\nMaterial: '+material+'\\nNotes: '+(notes||'None');return <main className="container section"><Title eyebrow="Made for your space" title="Request a custom piece." sub="Build a sample furniture request and copy it. No personal information is collected or sent."/><div className="grid md:grid-cols-2 gap-12"><form onSubmit={e=>{e.preventDefault();navigator.clipboard.writeText(msg).then(()=>setCopied(true)).catch(()=>setCopied(false))}} className="space-y-5"><label className="block">Furniture type<select className="w-full p-3 border border-[#cbbfb0] bg-transparent mt-2" value={type} onChange={e=>setType(e.target.value)}>{['Wardrobe','Kitchen cabinet','Dining table','Office desk','Bookshelf','Sofa','Other furniture'].map(x=><option key={x}>{x}</option>)}</select></label><div className="grid grid-cols-3 gap-3">{[['Width',width,setWidth],['Height',height,setHeight],['Depth',depth,setDepth]].map(([label,value,setter])=><label className="block text-sm" key={label as string}>{label as string} (cm)<input required min="1" max="1000" type="number" value={value as string} onChange={e=>(setter as React.Dispatch<React.SetStateAction<string>>)(e.target.value)} className="w-full p-3 border border-[#cbbfb0] bg-transparent mt-2"/></label>)}</div><label className="block">Preferred material<select className="w-full p-3 border border-[#cbbfb0] bg-transparent mt-2" value={material} onChange={e=>setMaterial(e.target.value)}>{['Natural wood','MDF','Plywood','Metal','Fabric / upholstery','Not sure'].map(x=><option key={x}>{x}</option>)}</select></label><label className="block">Additional requirements (optional)<textarea className="w-full p-3 border border-[#cbbfb0] bg-transparent mt-2" rows={4} maxLength={500} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Preferred finish, number of pieces, or design ideas"/></label><button className="btn btn-dark w-full" type="submit"><Copy size={17} className="mr-2"/>{copied?'Copied inquiry':'Copy custom inquiry'}</button><p className="text-xs dim">Portfolio demonstration only. No quote, order, or message is submitted.</p></form><aside className="bg-[#e9e0d3] p-7 md:p-10 self-start"><div className="eyebrow mb-4">Your inquiry preview</div><h2 className="text-3xl mb-5">{type}</h2><p className="mb-4"><strong>Size:</strong> {width||'—'} × {height||'—'} × {depth||'—'} cm</p><p className="mb-4"><strong>Material:</strong> {material}</p><p className="dim whitespace-pre-wrap">{notes||'Add notes to personalize your request.'}</p><div className="border-t border-[#c9bba9] mt-8 pt-5 text-xs dim">Illustrative design request — measurements and material availability require confirmation.</div></aside></div></main>}
