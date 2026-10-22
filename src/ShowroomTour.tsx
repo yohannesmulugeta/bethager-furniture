@@ -4,13 +4,21 @@ import { ArrowUpRight } from 'lucide-react';
 
 const base = '/bethager-furniture/';
 const scenes = [
-  { image: 'living.jpg', alt: 'Illustrative sunlit living room with a cream sofa and warm wood furniture', eyebrow: '01 / Living Room', heading: 'Designed for living.', description: 'A place to gather, unwind and feel at home.', to: '/shop?category=Living+Room' },
-  { image: 'dining.jpg', alt: 'Illustrative dining room with a wood table and upholstered chairs', eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
-  { image: 'bedroom.jpg', alt: 'Illustrative bedroom with a cream bed and warm wood details', eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' },
+  { image: 'living', alt: 'Illustrative sunlit living room with a cream sofa and warm wood furniture', eyebrow: '01 / Living Room', heading: 'Designed for living.', description: 'A place to gather, unwind and feel at home.', to: '/shop?category=Living+Room' },
+  { image: 'dining', alt: 'Illustrative dining room with a wood table and upholstered chairs', eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
+  { image: 'bedroom', alt: 'Illustrative bedroom with a cream bed and warm wood details', eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' },
 ];
 
 function CollectionLink({ to }: { to: string }) {
   return <Link to={to} className="btn btn-dark">Explore this collection <ArrowUpRight className="ml-3" size={15} /></Link>;
+}
+
+function GalleryImage({ name, alt, lazy = false }: { name: string; alt: string; lazy?: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return <div className="relative aspect-[4/3] overflow-hidden bg-[#c6ae91]">
+    <img src={`${base}showroom/${name}-preview.jpg`} alt="" aria-hidden="true" loading={lazy ? 'lazy' : 'eager'} className="absolute inset-0 h-full w-full object-cover" />
+    <img src={`${base}showroom/${name}.jpg`} alt={alt} loading={lazy ? 'lazy' : 'eager'} decoding="async" onLoad={() => setLoaded(true)} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`} width="1672" height="941" />
+  </div>;
 }
 
 function MobileTour() {
@@ -22,11 +30,11 @@ function MobileTour() {
     </div>
     <div className="space-y-14">
       <figure className="container">
-        <img src={`${base}showroom/overview.jpg`} alt="Illustrative showroom entrance framed by warm wood and greenery" className="block w-full aspect-[4/3] object-cover object-center" width="1672" height="941" />
+        <GalleryImage name="overview" alt="Illustrative showroom entrance framed by warm wood and greenery" />
         <figcaption className="mt-3 text-[10px] uppercase tracking-[.18em] text-walnut">An invitation to explore</figcaption>
       </figure>
       {scenes.map((scene) => <article key={scene.image} className="container">
-        <img src={`${base}showroom/${scene.image}`} alt={scene.alt} loading="lazy" decoding="async" className="block w-full aspect-[4/3] object-cover object-center" width="1672" height="941" />
+        <GalleryImage name={scene.image} alt={scene.alt} lazy />
         <div className="pt-6">
           <p className="eyebrow text-walnut mb-3">{scene.eyebrow}</p>
           <h2 className="text-4xl leading-tight mb-3">{scene.heading}</h2>
@@ -41,16 +49,41 @@ function MobileTour() {
 function DesktopTour({ reduced }: { reduced: boolean }) {
   const section = useRef<HTMLElement | null>(null);
   const previewVideo = useRef<HTMLVideoElement | null>(null);
+  const localPreviewVideo = useRef<HTMLVideoElement | null>(null);
   const hdVideo = useRef<HTMLVideoElement | null>(null);
   const target = useRef(0);
   const [progress, setProgress] = useState(0);
   const [previewReady, setPreviewReady] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState<string>();
+  const [previewFetchFailed, setPreviewFetchFailed] = useState(false);
+  const [showLocalPreview, setShowLocalPreview] = useState(false);
   const [hdSrc, setHdSrc] = useState<string>();
   const [showHd, setShowHd] = useState(false);
 
   useEffect(() => {
     if (reduced || (!previewReady && !previewFailed)) return;
+    const controller = new AbortController();
+    let url = '';
+    fetch(`${base}videos/showroom-desktop.mp4`, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Showroom preview: ${response.status}`);
+        return response.blob();
+      })
+      .then((blob) => {
+        if (controller.signal.aborted) return;
+        url = URL.createObjectURL(blob);
+        setPreviewSrc(url);
+      })
+      .catch(() => { if (!controller.signal.aborted) setPreviewFetchFailed(true); });
+    return () => {
+      controller.abort();
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [previewReady, previewFailed, reduced]);
+
+  useEffect(() => {
+    if (reduced || (!previewSrc && !previewFetchFailed)) return;
     const controller = new AbortController();
     let url = '';
     fetch(`${base}videos/showroom-desktop-hd.mp4`, { signal: controller.signal })
@@ -68,7 +101,7 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
       controller.abort();
       if (url) URL.revokeObjectURL(url);
     };
-  }, [previewReady, previewFailed, reduced]);
+  }, [previewSrc, previewFetchFailed, reduced]);
 
   useEffect(() => {
     if (reduced) return;
@@ -86,8 +119,14 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
       if (Math.abs(video.currentTime - time) > .055) video.currentTime = time;
     };
     const tick = () => {
-      seek(previewVideo.current);
+      if (!showLocalPreview) seek(previewVideo.current);
+      seek(localPreviewVideo.current);
       seek(hdVideo.current);
+      const local = localPreviewVideo.current;
+      if (previewSrc && local && !local.seeking && local.readyState >= 2 &&
+        Math.abs(local.currentTime - target.current * Math.max(0, local.duration - .04)) < .12) {
+        setShowLocalPreview(true);
+      }
       const hd = hdVideo.current;
       if (hdSrc && hd && !hd.seeking && hd.readyState >= 2 &&
         Math.abs(hd.currentTime - target.current * Math.max(0, hd.duration - .04)) < .12) {
@@ -104,7 +143,7 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
       window.removeEventListener('resize', update);
       cancelAnimationFrame(frame);
     };
-  }, [hdSrc, reduced]);
+  }, [hdSrc, previewSrc, reduced, showLocalPreview]);
 
   const stage = progress < .34 ? 0 : progress < .68 ? 1 : 2;
   const scene = scenes[stage];
@@ -113,8 +152,9 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
     <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#332b23] text-white">
       {reduced ? <img src={`${base}showroom/overview.jpg`} alt="Illustrative showroom with warm wood and greenery" className="absolute inset-0 h-full w-full object-cover" /> : <>
         <video ref={previewVideo} src={`${base}videos/showroom-desktop.mp4`} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="auto" aria-hidden="true" onLoadedData={() => setPreviewReady(true)} onError={() => setPreviewFailed(true)} />
+        {previewFailed && !showLocalPreview && !showHd && <img src={`${base}showroom/overview.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+        {previewSrc && <video ref={localPreviewVideo} src={previewSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showLocalPreview ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => setShowLocalPreview(false)} />}
         {hdSrc && <video ref={hdVideo} src={hdSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showHd ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => setShowHd(false)} />}
-        {previewFailed && !hdSrc && <img src={`${base}showroom/overview.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
       </>}
       <div className="absolute inset-0 bg-gradient-to-r from-[#10221c]/80 via-[#10221c]/25 to-transparent" />
       <div className="container relative h-full flex items-center"><div className="max-w-xl">
