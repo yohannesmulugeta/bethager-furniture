@@ -4,9 +4,9 @@ import { ArrowUpRight } from 'lucide-react';
 
 const base = '/bethager-furniture/';
 const scenes = [
-  { image: 'living.png', alt: 'Illustrative sunlit living room with a cream sofa and warm wood furniture', eyebrow: '01 / Living Room', heading: 'Designed for living.', description: 'A place to gather, unwind and feel at home.', to: '/shop?category=Living+Room' },
-  { image: 'dining.png', alt: 'Illustrative dining room with a wood table and upholstered chairs', eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
-  { image: 'bedroom.png', alt: 'Illustrative bedroom with a cream bed and warm wood details', eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' },
+  { image: 'living.jpg', alt: 'Illustrative sunlit living room with a cream sofa and warm wood furniture', eyebrow: '01 / Living Room', heading: 'Designed for living.', description: 'A place to gather, unwind and feel at home.', to: '/shop?category=Living+Room' },
+  { image: 'dining.jpg', alt: 'Illustrative dining room with a wood table and upholstered chairs', eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
+  { image: 'bedroom.jpg', alt: 'Illustrative bedroom with a cream bed and warm wood details', eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' },
 ];
 
 function CollectionLink({ to }: { to: string }) {
@@ -22,7 +22,7 @@ function MobileTour() {
     </div>
     <div className="space-y-14">
       <figure className="container">
-        <img src={`${base}showroom/overview.png`} alt="Illustrative showroom entrance framed by warm wood and greenery" className="block w-full aspect-[4/3] object-cover object-center" width="1672" height="941" />
+        <img src={`${base}showroom/overview.jpg`} alt="Illustrative showroom entrance framed by warm wood and greenery" className="block w-full aspect-[4/3] object-cover object-center" width="1672" height="941" />
         <figcaption className="mt-3 text-[10px] uppercase tracking-[.18em] text-walnut">An invitation to explore</figcaption>
       </figure>
       {scenes.map((scene) => <article key={scene.image} className="container">
@@ -111,10 +111,10 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
 
   return <section ref={section} className={reduced ? 'relative h-[85vh] hidden md:block' : 'relative h-[360vh] hidden md:block'} aria-label="BETHAGER showroom tour">
     <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#332b23] text-white">
-      {reduced ? <img src={`${base}showroom/overview.png`} alt="Illustrative showroom with warm wood and greenery" className="absolute inset-0 h-full w-full object-cover" /> : <>
+      {reduced ? <img src={`${base}showroom/overview.jpg`} alt="Illustrative showroom with warm wood and greenery" className="absolute inset-0 h-full w-full object-cover" /> : <>
         <video ref={previewVideo} src={`${base}videos/showroom-desktop.mp4`} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="auto" aria-hidden="true" onLoadedData={() => setPreviewReady(true)} onError={() => setPreviewFailed(true)} />
         {hdSrc && <video ref={hdVideo} src={hdSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showHd ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => setShowHd(false)} />}
-        {previewFailed && !hdSrc && <img src={`${base}showroom/overview.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+        {previewFailed && !hdSrc && <img src={`${base}showroom/overview.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
       </>}
       <div className="absolute inset-0 bg-gradient-to-r from-[#10221c]/80 via-[#10221c]/25 to-transparent" />
       <div className="container relative h-full flex items-center"><div className="max-w-xl">
