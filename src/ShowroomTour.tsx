@@ -8,16 +8,36 @@ const scenes = [
   { image: 'dining', alt: 'Illustrative dining room with a wood table and upholstered chairs', eyebrow: '02 / Dining', heading: 'Gather beautifully.', description: 'Make every shared moment feel special.', to: '/shop?category=Dining' },
   { image: 'bedroom', alt: 'Illustrative bedroom with a cream bed and warm wood details', eyebrow: '03 / Bedroom', heading: 'Rest in comfort.', description: 'Thoughtful pieces for peaceful spaces.', to: '/shop?category=Bedroom' },
 ];
+const ethiopiaScenes = [
+  {
+    image: 'addis-home',
+    alt: 'A home interior in Addis Ababa, Ethiopia, photographed by Nina R',
+    eyebrow: '04 / Homes in Ethiopia',
+    heading: 'Spaces with a story.',
+    description: 'A glimpse inside a real Addis Ababa home. Editorial inspiration, not a BETHAGER project.',
+    credit: 'Nina R',
+    source: 'https://commons.wikimedia.org/wiki/File:Home_in_Addis_Abeba,_Ethiopia_(52063422323).jpg',
+  },
+  {
+    image: 'bamboo-chair',
+    alt: 'A bamboo chair in Ethiopia, photographed by Natnael Tadele',
+    eyebrow: '05 / Craft in Ethiopia',
+    heading: 'Craft worth seeing.',
+    description: 'A close look at Ethiopian bamboo furniture. Editorial inspiration, not a BETHAGER product.',
+    credit: 'Natnael Tadele',
+    source: 'https://commons.wikimedia.org/wiki/File:Bamboo_Chair_2.jpg',
+  },
+];
 
 function CollectionLink({ to }: { to: string }) {
   return <Link to={to} className="btn btn-dark">Explore this collection <ArrowUpRight className="ml-3" size={15} /></Link>;
 }
 
-function GalleryImage({ name, alt, lazy = false }: { name: string; alt: string; lazy?: boolean }) {
+function GalleryImage({ name, alt, lazy = false, folder = 'showroom' }: { name: string; alt: string; lazy?: boolean; folder?: 'showroom' | 'ethiopia' }) {
   const [loaded, setLoaded] = useState(false);
   return <div className="relative aspect-[4/3] overflow-hidden bg-[#c6ae91]">
-    <img src={`${base}showroom/${name}-preview.jpg`} alt="" aria-hidden="true" loading={lazy ? 'lazy' : 'eager'} className="absolute inset-0 h-full w-full object-cover" />
-    <img src={`${base}showroom/${name}.jpg`} alt={alt} loading={lazy ? 'lazy' : 'eager'} decoding="async" onLoad={() => setLoaded(true)} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`} width="1672" height="941" />
+    <img src={`${base}${folder}/${name}-preview.jpg`} alt="" aria-hidden="true" loading={lazy ? 'lazy' : 'eager'} className="absolute inset-0 h-full w-full object-cover" />
+    <img src={`${base}${folder}/${name}.jpg`} alt={alt} loading={lazy ? 'lazy' : 'eager'} decoding="async" onLoad={() => setLoaded(true)} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`} />
   </div>;
 }
 
@@ -42,6 +62,15 @@ function MobileTour() {
           <CollectionLink to={scene.to} />
         </div>
       </article>)}
+      {ethiopiaScenes.map((scene) => <figure key={scene.image} className="container">
+        <GalleryImage name={scene.image} alt={scene.alt} folder="ethiopia" lazy />
+        <figcaption className="pt-6">
+          <p className="eyebrow text-walnut mb-3">{scene.eyebrow}</p>
+          <h2 className="text-4xl leading-tight mb-3">{scene.heading}</h2>
+          <p className="dim text-sm leading-6">{scene.description}</p>
+          <p className="dim text-xs mt-3">Photo: <a href={scene.source} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{scene.credit}</a></p>
+        </figcaption>
+      </figure>)}
     </div>
   </section>;
 }
