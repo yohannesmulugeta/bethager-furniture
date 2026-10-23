@@ -174,16 +174,16 @@ function DesktopTour({ reduced }: { reduced: boolean }) {
     };
   }, [hdSrc, previewSrc, reduced, showLocalPreview]);
 
-  const stage = progress < .34 ? 0 : progress < .68 ? 1 : 2;
+  const stage = progress < .34 ? 0 : progress < .76 ? 1 : 2;
   const scene = scenes[stage];
 
   return <section ref={section} className={reduced ? 'relative h-[85vh] hidden md:block' : 'relative h-[360vh] hidden md:block'} aria-label="BETHAGER showroom tour">
     <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#332b23] text-white">
       {reduced ? <img src={`${base}showroom/overview.jpg`} alt="Illustrative showroom with warm wood and greenery" className="absolute inset-0 h-full w-full object-cover" /> : <>
-        <video ref={previewVideo} src={`${base}videos/showroom-desktop.mp4`} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="auto" aria-hidden="true" onLoadedData={() => setPreviewReady(true)} onError={() => setPreviewFailed(true)} />
-        {previewFailed && !showLocalPreview && !showHd && <img src={`${base}showroom/overview.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-        {previewSrc && <video ref={localPreviewVideo} src={previewSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showLocalPreview ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => setShowLocalPreview(false)} />}
-        {hdSrc && <video ref={hdVideo} src={hdSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showHd ? 'opacity-100' : 'opacity-0'}`} muted playsInline preload="auto" aria-hidden="true" onError={() => setShowHd(false)} />}
+        <img src={`${base}showroom/overview.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <video ref={previewVideo} src={`${base}videos/showroom-desktop.mp4`} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${previewReady ? 'opacity-100' : 'opacity-0'}`} muted autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event => event.currentTarget.pause()} onLoadedData={() => setPreviewReady(true)} onError={() => setPreviewFailed(true)} />
+        {previewSrc && <video ref={localPreviewVideo} src={previewSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${showLocalPreview ? 'opacity-100' : 'opacity-0'}`} muted autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event => event.currentTarget.pause()} onError={() => setShowLocalPreview(false)} />}
+        {hdSrc && <video ref={hdVideo} src={hdSrc} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showHd ? 'opacity-100' : 'opacity-0'}`} muted autoPlay playsInline preload="auto" aria-hidden="true" onPlay={event => event.currentTarget.pause()} onError={() => setShowHd(false)} />}
       </>}
       <div className="absolute inset-0 bg-gradient-to-r from-[#10221c]/80 via-[#10221c]/25 to-transparent" />
       <div className="container relative h-full flex items-center"><div className="max-w-xl">
